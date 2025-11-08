@@ -1,0 +1,53 @@
+# utils/pdf_generator.py
+import io
+from reportlab.lib.pagesizes import mm
+from reportlab.pdfgen import canvas
+from datetime import datetime
+
+BUSINESS_NAME = "Parrilladas - El Establo"
+
+def generate_ticket_bytes(client_name, items, total):
+    # Ticket 80 mm width
+    width_mm = 80
+    line_height_mm = 6
+    margin_mm = 6
+    n_lines = 6 + len(items)
+    height_mm = margin_mm*2 + n_lines * line_height_mm
+
+    width = width_mm * mm
+    height = height_mm * mm
+
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=(width, height))
+    c.setFont("Helvetica-Bold", 10)
+    y = height - margin_mm * mm
+
+    c.drawCentredString(width / 2, y, BUSINESS_NAME)
+    y -= 8
+    c.setFont("Helvetica", 8)
+    c.drawCentredString(width / 2, y, f"Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    y -= 12
+    c.drawString(margin_mm * mm, y, f"Cliente: {client_name}")
+    y -= 12
+
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(margin_mm * mm, y, "ITEM")
+    c.drawRightString(width - margin_mm * mm, y, "SUBTOTAL")
+    y -= 10
+    c.setFont("Helvetica", 9)
+
+    for it in items:
+        line = f"{it['name']} x{it['qty']} @ {it['unit_price']:.2f}"
+        c.drawString(margin_mm * mm, y, line)
+        c.drawRightString(width - margin_mm * mm, y, f"S/. {it['subtotal']:.2f}")
+        y -= 10
+
+    y -= 4
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(margin_mm * mm, y, "TOTAL")
+    c.drawRightString(width - margin_mm * mm, y, f"S/. {total:.2f}")
+
+    c.showPage()
+    c.save()
+    buffer.seek(0)
+    return buffer.read()
