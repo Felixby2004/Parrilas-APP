@@ -4,8 +4,8 @@ from utils.data import init_session_state
 
 
 st.set_page_config(
-    page_title="El Establo",
-    page_icon="🥩",
+    page_title="Parrilladas - El Establo",
+    page_icon="🔥",
     initial_sidebar_state="expanded",
     layout="wide"
 )
