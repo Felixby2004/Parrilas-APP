@@ -53,7 +53,7 @@ def show():
             # Precio unitario final incluyendo extras
             unit_price = round(PLATOS[plato_select], 2)
 
-            subtotal = round(unit_price * cantidad_plato, 2)
+            subtotal = round(unit_price * cantidad_plato + extra_cost, 2)
 
             st.session_state.cart.append({
                 "name": name_final,
@@ -63,7 +63,7 @@ def show():
                 "subtotal": subtotal
             })
 
-            st.success(f"{name_final} x{cantidad_plato} agregado al carrito ✅")
+            st.success(f"Agregado al carrito ✅")
 
     st.subheader("🥤 Bebidas")
 
@@ -86,7 +86,7 @@ def show():
                 "subtotal": subtotal
             })
 
-            st.success(f"{bebida_select} x{cantidad_bebida} agregado al carrito ✅")
+            st.success(f"Agregado al carrito ✅")
 
 
     # --- CARRITO ABAJO ---
