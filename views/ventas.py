@@ -7,6 +7,10 @@ from utils.sheets_client import SheetsClient
 # Inicializa session_state si no existe
 init_session_state()
 
+# --- INICIALIZAR OBSERVACIONES ---
+if "observaciones_input" not in st.session_state:
+    st.session_state.observaciones_input = ""
+
 _sheets_client = None
 def get_sheets():
     global _sheets_client
@@ -88,7 +92,8 @@ def show():
 
             st.success(f"Agregado al carrito ✅")
 
-    observaciones = st.text_area("Observaciones", key="observaciones_input")
+    # --- OBSERVACIONES ---
+    observaciones = st.text_area("Observaciones (opcional)", key="observaciones_input")
 
     # --- CARRITO ABAJO ---
     st.markdown("---")
