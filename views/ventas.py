@@ -130,19 +130,24 @@ def show():
         else:
             try:
                 sheets = get_sheets()
-                venta_id = sheets.append_sale(client_name, st.session_state.cart, observaciones)
+                venta_id = sheets.append_sale(client_name, st.session_state.cart, st.session_state.observaciones_input)
             except Exception as e:
                 st.error(f"❌ Error guardando en Google Sheets: {e}")
                 return
 
-            # Guardar PDF en session_state
-            pdf_bytes = generate_ticket_bytes(client_name, st.session_state.cart, total_general)
+            # Guardar PDF en session_state incluyendo observaciones
+            pdf_bytes = generate_ticket_bytes(
+                client_name,
+                st.session_state.cart,
+                total_general,
+                st.session_state.observaciones_input  # <-- pasar observaciones al PDF
+            )
             st.session_state.last_pdf = pdf_bytes
             st.session_state.last_venta_id = venta_id
 
-            # limpiar carrito
+            # Limpiar carrito y observaciones
             st.session_state.cart = []
-            st.session_state.observaciones = ""
+            st.session_state.observaciones_input = ""  # limpiar correctamente
             st.success(f"✅ Venta registrada correctamente (ID: {venta_id})")
 
             st.rerun()
@@ -155,4 +160,5 @@ def show():
             file_name=f"ticket_{st.session_state.last_venta_id}.pdf",
             mime="application/pdf"
         )
+
 
