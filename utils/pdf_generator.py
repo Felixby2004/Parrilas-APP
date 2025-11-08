@@ -43,7 +43,7 @@ def generate_ticket_bytes(client_name, items, total, observaciones=""):
 
     # Cabecera de items
     c.setFont("Helvetica-Bold", 9)
-    c.drawString(margin_mm * mm, y, "ITEM")
+    c.drawString(margin_mm * mm, y, "PEDIDO")
     c.drawRightString(width - margin_mm * mm, y, "SUBTOTAL")
     y -= 10
     c.setFont("Helvetica", 9)
