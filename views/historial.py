@@ -52,5 +52,5 @@ def show():
             sel = st.selectbox("Buscar nombre de cliente para ver detalle", options=["Seleccionar"] + ids)
             if sel != "Seleccionar":
                 detalle = df[df["cliente"] == sel]
-                st.subheader(f"🧾 Detalle de Venta ID: {sel}")
+                st.subheader(f"🧾 Detalle de Venta: {sel}")
                 st.table(detalle)

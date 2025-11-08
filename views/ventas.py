@@ -129,10 +129,23 @@ def show():
                 st.error(f"❌ Error guardando en Google Sheets: {e}")
                 return
 
+            # Guardar PDF en session_state
             pdf_bytes = generate_ticket_bytes(client_name, st.session_state.cart, total_general)
-            st.download_button("📥 Descargar comprobante PDF", data=pdf_bytes,
-                               file_name=f"ticket_{venta_id}.pdf", mime="application/pdf")
+            st.session_state.last_pdf = pdf_bytes
+            st.session_state.last_venta_id = venta_id
 
+            # limpiar carrito
             st.session_state.cart = []
             st.success(f"✅ Venta registrada correctamente (ID: {venta_id})")
+
             st.rerun()
+
+    # ---- Mostrar botón de PDF después del rerun ----
+    if "last_pdf" in st.session_state:
+        st.download_button(
+            "📥 Descargar comprobante PDF",
+            data=st.session_state.last_pdf,
+            file_name=f"ticket_{st.session_state.last_venta_id}.pdf",
+            mime="application/pdf"
+        )
+
