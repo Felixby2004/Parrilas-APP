@@ -149,7 +149,6 @@ def show():
             st.session_state.cart = []
             st.success(f"✅ Venta registrada correctamente (ID: {venta_id})")
 
-            st.rerun()
 
     # ---- Mostrar botón de PDF después del rerun ----
     if "last_pdf" in st.session_state:
