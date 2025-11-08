@@ -88,6 +88,7 @@ def show():
 
             st.success(f"Agregado al carrito ✅")
 
+    observaciones = st.text_area("Observaciones", key="observaciones_input")
 
     # --- CARRITO ABAJO ---
     st.markdown("---")
@@ -116,8 +117,6 @@ def show():
 
     st.markdown("---")
     st.write(f"### 💵 Total General: S/. {total_general:.2f}")
-
-    observaciones = st.text_area("Observaciones", key="observaciones_input")
 
     # Registrar venta
     if st.button("✅ Registrar Venta y Guardar"):
