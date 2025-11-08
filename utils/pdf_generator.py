@@ -3,6 +3,7 @@ import io
 from reportlab.lib.pagesizes import mm
 from reportlab.pdfgen import canvas
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 BUSINESS_NAME = "Parrilladas - El Establo"
 
@@ -25,7 +26,7 @@ def generate_ticket_bytes(client_name, items, total):
     c.drawCentredString(width / 2, y, BUSINESS_NAME)
     y -= 8
     c.setFont("Helvetica", 8)
-    c.drawCentredString(width / 2, y, f"Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    c.drawCentredString(width / 2, y, f"Fecha: {datetime.now(ZoneInfo("America/Lima")).strftime('%Y-%m-%d %H:%M:%S')}")
     y -= 12
     c.drawString(margin_mm * mm, y, f"Cliente: {client_name}")
     y -= 12
@@ -37,7 +38,7 @@ def generate_ticket_bytes(client_name, items, total):
     c.setFont("Helvetica", 9)
 
     for it in items:
-        line = f"{it['name']} x{it['qty']} @ {it['unit_price']:.2f}"
+        line = f"{it['name']} x{it['qty']} - {it['unit_price']:.2f}"
         c.drawString(margin_mm * mm, y, line)
         c.drawRightString(width - margin_mm * mm, y, f"S/. {it['subtotal']:.2f}")
         y -= 10
