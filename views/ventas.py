@@ -22,51 +22,48 @@ def show():
 
     st.subheader("🍽️ Platos")
 
-    col1, col2 = st.columns(2)
-
     # Selección de plato + extras
-    with col1:
-        plato_select = st.selectbox("Selecciona un plato", ["Seleccionar"] + list(PLATOS.keys()))
-        papas = False
-        taper = False
+    plato_select = st.selectbox("Selecciona un plato", ["Seleccionar"] + list(PLATOS.keys()))
+    papas = False
+    taper = False
 
-        if plato_select != "Seleccionar":
-            papas = st.checkbox("Agregar Papas Fritas (+S/. {:.2f})".format(EXTRA_PAPAS))
-            taper = st.checkbox("Agregar Taper (+S/. {:.2f})".format(EXTRA_TAPER))
+    if plato_select != "Seleccionar":
+        papas = st.checkbox("Agregar Papas Fritas (+S/. {:.2f})".format(EXTRA_PAPAS))
+        taper = st.checkbox("Agregar Taper (+S/. {:.2f})".format(EXTRA_TAPER))
 
-        cantidad_plato = st.number_input("Cantidad de platos", min_value=0, value=0, step=1)
+    cantidad_plato = st.number_input("Cantidad de platos", min_value=0, value=0, step=1)
 
-        if st.button("Agregar Plato al Carrito"):
-            if plato_select == "Seleccionar" or cantidad_plato <= 0:
-                st.warning("Selecciona un plato y una cantidad válida.")
-            else:
-                extras = []
-                extra_cost = 0
+    if st.button("Agregar Plato al Carrito"):
+        if plato_select == "Seleccionar" or cantidad_plato <= 0:
+            st.warning("Selecciona un plato y una cantidad válida.")
+        else:
+            extras = []
+            extra_cost = 0
 
-                if papas:
-                    extras.append("Papas fritas")
-                    extra_cost += EXTRA_PAPAS
-                if taper:
-                    extras.append("Taper")
-                    extra_cost += EXTRA_TAPER
+            if papas:
+                extras.append("Papas fritas")
+                extra_cost += EXTRA_PAPAS*cantidad_plato
+            if taper:
+                extras.append("Taper")
+                extra_cost += EXTRA_TAPER*cantidad_plato
 
-                # Nombre final del producto
-                name_final = plato_select + (" + " + " + ".join(extras) if extras else "")
+            # Nombre final del producto
+            name_final = plato_select + (" + " + " + ".join(extras) if extras else "")
 
-                # Precio unitario final incluyendo extras
-                unit_price = round(PLATOS[plato_select] + extra_cost, 2)
+            # Precio unitario final incluyendo extras
+            unit_price = round(PLATOS[plato_select] + extra_cost, 2)
 
-                subtotal = round(unit_price * cantidad_plato, 2)
+            subtotal = round(unit_price * cantidad_plato, 2)
 
-                st.session_state.cart.append({
-                    "name": name_final,
-                    "qty": int(cantidad_plato),
-                    "unit_price": unit_price,
-                    "extra": round(extra_cost, 2),
-                    "subtotal": subtotal
-                })
+            st.session_state.cart.append({
+                "name": name_final,
+                "qty": int(cantidad_plato),
+                "unit_price": unit_price,
+                "extra": round(extra_cost, 2),
+                "subtotal": subtotal
+            })
 
-                st.success(f"{name_final} x{cantidad_plato} agregado al carrito ✅")
+            st.success(f"{name_final} x{cantidad_plato} agregado al carrito ✅")
 
     st.subheader("🥤 Bebidas")
 
@@ -91,6 +88,7 @@ def show():
 
             st.success(f"{bebida_select} x{cantidad_bebida} agregado al carrito ✅")
 
+
     # --- CARRITO ABAJO ---
     st.markdown("---")
     st.subheader("🛒 Carrito de Compra")
@@ -112,7 +110,7 @@ def show():
 
         if row[5].button("🗑️", key=f"del_{i}"):
             st.session_state.cart.pop(i)
-            st.experimental_rerun()
+            st.rerun()
 
         total_general += item["subtotal"]
 
@@ -137,4 +135,4 @@ def show():
 
             st.session_state.cart = []
             st.success(f"✅ Venta registrada correctamente (ID: {venta_id})")
-            st.experimental_rerun()
+            st.rerun()

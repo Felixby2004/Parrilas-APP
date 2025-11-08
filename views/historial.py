@@ -45,19 +45,12 @@ def show():
 
     # ==========================
 
-    st.dataframe(df, use_container_width=True)
-
-    # Exportar CSV
-    if st.button("📥 Exportar CSV"):
-        csv = df.to_csv(index=False).encode("utf-8")
-        st.download_button("⬇️ Descargar CSV", data=csv, file_name="historial_ventas.csv", mime="text/csv")
-
     # Detalle por venta_id
-    if "venta_id" in df.columns:
-        ids = df["venta_id"].dropna().unique().tolist()
+    if "cliente" in df.columns:
+        ids = df["cliente"].dropna().unique().tolist()
         if ids:
-            sel = st.selectbox("Seleccionar ID de venta para ver detalle", options=["Seleccionar"] + ids)
+            sel = st.selectbox("Buscar nombre de cliente para ver detalle", options=["Seleccionar"] + ids)
             if sel != "Seleccionar":
-                detalle = df[df["venta_id"] == sel]
+                detalle = df[df["cliente"] == sel]
                 st.subheader(f"🧾 Detalle de Venta ID: {sel}")
                 st.table(detalle)
