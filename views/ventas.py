@@ -28,8 +28,8 @@ def show():
     taper = False
 
     if plato_select != "Seleccionar":
-        papas = st.checkbox("Agregar Papas Fritas (+S/. {:.2f})".format(EXTRA_PAPAS))
-        taper = st.checkbox("Agregar Taper (+S/. {:.2f})".format(EXTRA_TAPER))
+        papas = st.checkbox("Agregar Papas Fritas")
+        taper = st.checkbox("Agregar Taper")
 
     cantidad_plato = st.number_input("Cantidad de platos", min_value=0, value=0, step=1)
 
@@ -51,7 +51,7 @@ def show():
             name_final = plato_select + (" + " + " + ".join(extras) if extras else "")
 
             # Precio unitario final incluyendo extras
-            unit_price = round(PLATOS[plato_select] + extra_cost, 2)
+            unit_price = round(PLATOS[plato_select], 2)
 
             subtotal = round(unit_price * cantidad_plato, 2)
 
