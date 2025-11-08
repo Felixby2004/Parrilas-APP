@@ -142,7 +142,7 @@ def show():
 
             # limpiar carrito
             st.session_state.cart = []
-            st.session_state.observaciones_input = ""
+            st.session_state.observaciones = ""
             st.success(f"✅ Venta registrada correctamente (ID: {venta_id})")
 
             st.rerun()
