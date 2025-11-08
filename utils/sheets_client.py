@@ -44,7 +44,7 @@ class SheetsClient:
         except:
             return 1
 
-    def append_sale(self, client_name, cart_items):
+    def append_sale(self, client_name, cart_items, observaciones=""):
         venta_id = self._get_next_venta_id()
         rows = []
 
@@ -57,7 +57,8 @@ class SheetsClient:
                 it['qty'],  # cantidad
                 f"{it['unit_price']:.2f}",  # precio unitario
                 f"{it.get('extra', 0):.2f}",  # extra (monto)
-                f"{it['subtotal']:.2f}"  # precio total por item
+                f"{it['subtotal']:.2f}",  # precio total por item
+                observaciones  # nueva columna
             ]
             rows.append(row)
 

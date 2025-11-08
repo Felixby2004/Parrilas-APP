@@ -117,6 +117,8 @@ def show():
     st.markdown("---")
     st.write(f"### 💵 Total General: S/. {total_general:.2f}")
 
+    observaciones = st.text_area("Observaciones", key="observaciones_input")
+
     # Registrar venta
     if st.button("✅ Registrar Venta y Guardar"):
         if not client_name or client_name.strip() == "":
@@ -124,7 +126,7 @@ def show():
         else:
             try:
                 sheets = get_sheets()
-                venta_id = sheets.append_sale(client_name, st.session_state.cart)
+                venta_id = sheets.append_sale(client_name, st.session_state.cart, observaciones)
             except Exception as e:
                 st.error(f"❌ Error guardando en Google Sheets: {e}")
                 return
@@ -136,6 +138,7 @@ def show():
 
             # limpiar carrito
             st.session_state.cart = []
+            st.session_state.observaciones_input = ""
             st.success(f"✅ Venta registrada correctamente (ID: {venta_id})")
 
             st.rerun()
