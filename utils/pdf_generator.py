@@ -2,8 +2,6 @@
 import io
 from reportlab.lib.pagesizes import mm
 from reportlab.pdfgen import canvas
-from datetime import datetime
-from zoneinfo import ZoneInfo
 from textwrap import wrap
 
 def generate_ticket_bytes(client_name, items, total, observaciones=""):
@@ -12,7 +10,6 @@ def generate_ticket_bytes(client_name, items, total, observaciones=""):
     width = width_mm * mm
 
     # Font sizes
-    title_size = 11
     client_size = 10
     text_size = 8
 
@@ -67,7 +64,7 @@ def generate_ticket_bytes(client_name, items, total, observaciones=""):
             if idx == 0:
                 c.drawRightString(width - margin_mm * mm, y, f"S/. {it['subtotal']:.2f}")
             y -= 10
-        y -= 2
+        y -= 5
 
     # Total
     y -= 4
