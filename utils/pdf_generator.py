@@ -4,50 +4,80 @@ from reportlab.lib.pagesizes import mm
 from reportlab.pdfgen import canvas
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from textwrap import wrap
 
 BUSINESS_NAME = "Parrilladas - El Establo"
 
 def generate_ticket_bytes(client_name, items, total, observaciones=""):
-    # Ticket 80 mm width
     width_mm = 80
-    line_height_mm = 6
     margin_mm = 6
-    n_lines = 6 + len(items) + (1 if observaciones else 0)  # agregar línea si hay observaciones
-    height_mm = margin_mm*2 + n_lines * line_height_mm
-
     width = width_mm * mm
+
+    # Font sizes
+    title_size = 11
+    client_size = 10
+    text_size = 8
+
+    # Convert items & obs to count lines for height calculation
+    def wrapped_lines(text, max_chars=32):
+        return wrap(text, max_chars)
+
+    lines_count = 6  # base
+    for it in items:
+        line = f"{it['qty']} {it['name']}"
+        lines_count += len(wrapped_lines(line))
+    if observaciones.strip():
+        lines_count += len(wrapped_lines("Observaciones: " + observaciones, 36))
+
+    line_height_mm = 5
+    height_mm = margin_mm*2 + lines_count * line_height_mm
     height = height_mm * mm
 
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=(width, height))
-    c.setFont("Helvetica-Bold", 10)
+
     y = height - margin_mm * mm
 
-    # Cliente
-    c.drawString(margin_mm * mm, y, f"Cliente: {client_name}")
-    y -= 24
+    # BUSINESS NAME
+    c.setFont("Helvetica-Bold", title_size)
+    c.drawCentredString(width / 2, y, BUSINESS_NAME)
+    y -= 14
 
-    # Observaciones (si existen)
+    # Client centered and bigger
+    c.setFont("Helvetica-Bold", client_size)
+    c.drawCentredString(width / 2, y, f"{client_name}")
+    y -= 16
+
+    # Observaciones con wrap
     if observaciones.strip():
-        c.drawString(margin_mm * mm, y, f"Observaciones: {observaciones}")
-        y -= 12
+        c.setFont("Helvetica", text_size)
+        wrapped_obs = wrapped_lines("Observaciones: " + observaciones, 36)
+        for line in wrapped_obs:
+            c.drawString(margin_mm * mm, y, line)
+            y -= 10
+        y -= 4
 
-    # Cabecera de items
+    # Headers
     c.setFont("Helvetica-Bold", 9)
     c.drawString(margin_mm * mm, y, "PEDIDO")
     c.drawRightString(width - margin_mm * mm, y, "SUBTOTAL")
-    y -= 10
-    c.setFont("Helvetica", 9)
+    y -= 12
 
-    # Items
+    # Items con auto-wrap
+    c.setFont("Helvetica", text_size)
     for it in items:
         line = f"{it['qty']} {it['name']}"
-        c.drawString(margin_mm * mm, y, line)
-        c.drawRightString(width - margin_mm * mm, y, f"S/. {it['subtotal']:.2f}")
-        y -= 10
+        wrapped = wrapped_lines(line)
+        for idx, part in enumerate(wrapped):
+            c.drawString(margin_mm * mm, y, part)
+            # Print subtotal only on first line
+            if idx == 0:
+                c.drawRightString(width - margin_mm * mm, y, f"S/. {it['subtotal']:.2f}")
+            y -= 10
+        y -= 2
 
-    y -= 10
     # Total
+    y -= 4
     c.setFont("Helvetica-Bold", 10)
     c.drawString(margin_mm * mm, y, "TOTAL")
     c.drawRightString(width - margin_mm * mm, y, f"S/. {total:.2f}")
