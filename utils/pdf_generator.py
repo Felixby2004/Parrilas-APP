@@ -50,7 +50,7 @@ def generate_ticket_bytes(client_name, items, total, observaciones=""):
 
     # Items
     for it in items:
-        line = f"{it['name']} x{it['qty']} - {it['unit_price']:.2f}"
+        line = f"{it['name']} x{it['qty']}"
         c.drawString(margin_mm * mm, y, line)
         c.drawRightString(width - margin_mm * mm, y, f"S/. {it['subtotal']:.2f}")
         y -= 10
