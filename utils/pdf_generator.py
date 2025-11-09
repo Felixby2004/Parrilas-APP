@@ -27,14 +27,9 @@ def generate_ticket_bytes(client_name, items, total, observaciones=""):
     c.drawCentredString(width / 2, y, BUSINESS_NAME)
     y -= 8
 
-    # Fecha
-    c.setFont("Helvetica", 8)
-    c.drawCentredString(width / 2, y, f"Fecha: {datetime.now(ZoneInfo('America/Lima')).strftime('%Y-%m-%d %H:%M:%S')}")
-    y -= 12
-
     # Cliente
     c.drawString(margin_mm * mm, y, f"Cliente: {client_name}")
-    y -= 12
+    y -= 24
 
     # Observaciones (si existen)
     if observaciones.strip():
@@ -55,7 +50,7 @@ def generate_ticket_bytes(client_name, items, total, observaciones=""):
         c.drawRightString(width - margin_mm * mm, y, f"S/. {it['subtotal']:.2f}")
         y -= 10
 
-    y -= 4
+    y -= 10
     # Total
     c.setFont("Helvetica-Bold", 10)
     c.drawString(margin_mm * mm, y, "TOTAL")
