@@ -5,7 +5,7 @@ from reportlab.pdfgen import canvas
 from textwrap import wrap
 
 def generate_ticket_bytes(client_name, items, total, observaciones=""):
-    width_mm = 80
+    width_mm = 90
     margin_mm = 6
     width = width_mm * mm
 
