@@ -6,8 +6,6 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from textwrap import wrap
 
-BUSINESS_NAME = "Parrilladas - El Establo"
-
 def generate_ticket_bytes(client_name, items, total, observaciones=""):
     width_mm = 80
     margin_mm = 6
@@ -37,11 +35,6 @@ def generate_ticket_bytes(client_name, items, total, observaciones=""):
     c = canvas.Canvas(buffer, pagesize=(width, height))
 
     y = height - margin_mm * mm
-
-    # BUSINESS NAME
-    c.setFont("Helvetica-Bold", title_size)
-    c.drawCentredString(width / 2, y, BUSINESS_NAME)
-    y -= 14
 
     # Client centered and bigger
     c.setFont("Helvetica-Bold", client_size)
