@@ -23,10 +23,6 @@ def generate_ticket_bytes(client_name, items, total, observaciones=""):
     c.setFont("Helvetica-Bold", 10)
     y = height - margin_mm * mm
 
-    # Nombre del negocio
-    c.drawCentredString(width / 2, y, BUSINESS_NAME)
-    y -= 8
-
     # Cliente
     c.drawString(margin_mm * mm, y, f"Cliente: {client_name}")
     y -= 24
@@ -45,7 +41,7 @@ def generate_ticket_bytes(client_name, items, total, observaciones=""):
 
     # Items
     for it in items:
-        line = f"{it['name']} x{it['qty']}"
+        line = f"{it['qty']} {it['name']}"
         c.drawString(margin_mm * mm, y, line)
         c.drawRightString(width - margin_mm * mm, y, f"S/. {it['subtotal']:.2f}")
         y -= 10
