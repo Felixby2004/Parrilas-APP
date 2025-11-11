@@ -7,7 +7,6 @@ from utils.sheets_client import SheetsClient
 # Inicializa session_state si no existe
 init_session_state()
 
-# --- INICIALIZAR OBSERVACIONES ---
 if "observaciones_input" not in st.session_state:
     st.session_state.observaciones_input = ""
 
@@ -25,8 +24,6 @@ def show():
     client_name = st.text_input("Nombre del Cliente", key="cliente_input")
 
     st.subheader("🍽️ Platos")
-
-    # Selección de plato + extras
     plato_select = st.selectbox("Selecciona un plato", ["Seleccionar"] + list(PLATOS.keys()))
     papas = False
     taper = False
@@ -46,17 +43,13 @@ def show():
 
             if papas:
                 extras.append("Papas fritas")
-                extra_cost += EXTRA_PAPAS*cantidad_plato
+                extra_cost += EXTRA_PAPAS * cantidad_plato
             if taper:
                 extras.append("Taper")
-                extra_cost += EXTRA_TAPER*cantidad_plato
+                extra_cost += EXTRA_TAPER * cantidad_plato
 
-            # Nombre final del producto
             name_final = plato_select + (" + " + " + ".join(extras) if extras else "")
-
-            # Precio unitario final incluyendo extras
             unit_price = round(PLATOS[plato_select], 2)
-
             subtotal = round(unit_price * cantidad_plato + extra_cost, 2)
 
             st.session_state.cart.append({
@@ -71,7 +64,6 @@ def show():
 
     st.subheader("🥤 Bebidas")
 
-    # Selección de bebida
     bebida_select = st.selectbox("Selecciona una bebida", ["Seleccionar"] + list(BEBIDAS.keys()))
     cantidad_bebida = st.number_input("Cantidad de bebidas", min_value=0, value=0, step=1, key="qty_bebida")
 
@@ -92,10 +84,9 @@ def show():
 
             st.success(f"Agregado al carrito ✅")
 
-    # --- OBSERVACIONES ---
+    # Observaciones
     observaciones = st.text_area("Observaciones (opcional)", key="observaciones_input")
 
-    # --- CARRITO ABAJO ---
     st.markdown("---")
     st.subheader("🛒 Carrito de Compra")
 
@@ -105,7 +96,6 @@ def show():
 
     total_general = 0
 
-    # Mostrar carrito
     for i, item in enumerate(list(st.session_state.cart)):
         row = st.columns([4, 1, 2, 2, 2, 1])
         row[0].write(item["name"])
@@ -123,40 +113,35 @@ def show():
     st.markdown("---")
     st.write(f"### 💵 Total General: S/. {total_general:.2f}")
 
+    if not client_name or client_name.strip() == "":
+        client_name = "A"
+
+    # 🔥 PDF en tiempo real (si no hay nombre → usar "A")
+    pdf_client = client_name if client_name.strip() else "A"
+    live_pdf = generate_ticket_bytes(
+        pdf_client,
+        st.session_state.cart,
+        total_general,
+        st.session_state.observaciones_input
+    )
+
+    st.download_button(
+        "🎟️ Descargar Comprobante",
+        data=live_pdf,
+        file_name=f"ticket_de_{client_name}.pdf",
+        mime="application/pdf"
+    )
+
     # Registrar venta
     if st.button("✅ Registrar Venta y Guardar"):
-        if not client_name or client_name.strip() == "":
-            st.warning("Ingresa el nombre del cliente antes de registrar la venta.")
-        else:
-            try:
-                sheets = get_sheets()
-                venta_id = sheets.append_sale(client_name, st.session_state.cart, st.session_state.observaciones_input)
-            except Exception as e:
-                st.error(f"❌ Error guardando en Google Sheets: {e}")
-                return
+        try:
+            sheets = get_sheets()
+            sheets.append_sale(client_name, st.session_state.cart, st.session_state.observaciones_input)
+        except Exception as e:
+            st.error(f"❌ Error guardando en Google Sheets: {e}")
+            return
 
-            # Guardar PDF en session_state incluyendo observaciones
-            pdf_bytes = generate_ticket_bytes(
-                client_name,
-                st.session_state.cart,
-                total_general,
-                st.session_state.observaciones_input  # <-- pasar observaciones al PDF
-            )
-            st.session_state.last_pdf = pdf_bytes
-            st.session_state.last_venta_id = venta_id
+        st.success(f"✅ Venta registrada")
 
-            # Limpiar carrito y observaciones
-            st.session_state.cart = []
-            st.success(f"✅ Venta registrada correctamente (ID: {venta_id})")
-
-
-    # ---- Mostrar botón de PDF después del rerun ----
-    if "last_pdf" in st.session_state:
-        st.download_button(
-            "📥 Descargar comprobante PDF",
-            data=st.session_state.last_pdf,
-            file_name=f"ticket_{st.session_state.last_venta_id}.pdf",
-            mime="application/pdf"
-        )
-
-
+        # Limpiar carrito al registrar
+        st.session_state.cart = []

@@ -10,21 +10,25 @@ def generate_ticket_bytes(client_name, items, total, observaciones=""):
     width = width_mm * mm
 
     # Font sizes
-    client_size = 10
-    text_size = 8
+    client_size = 12  # más grande
+    text_size = 9     # subido para mejor lectura
 
-    # Convert items & obs to count lines for height calculation
-    def wrapped_lines(text, max_chars=32):
+    # Ajuste: más caracteres antes del salto para ampliar PEDIDO
+    MAX_CHARS_DESC = 38  # antes 32 (aumenta el ancho)
+    MAX_CHARS_OBS = 42
+
+    def wrapped_lines(text, max_chars):
         return wrap(text, max_chars)
 
-    lines_count = 6  # base
+    # Altura calculada dinámicamente
+    lines_count = 6
     for it in items:
         line = f"{it['qty']} {it['name']}"
-        lines_count += len(wrapped_lines(line))
+        lines_count += len(wrapped_lines(line, MAX_CHARS_DESC))
     if observaciones.strip():
-        lines_count += len(wrapped_lines("Observaciones: " + observaciones, 36))
+        lines_count += len(wrapped_lines("Obs: " + observaciones, MAX_CHARS_OBS))
 
-    line_height_mm = 5
+    line_height_mm = 5.2
     height_mm = margin_mm*2 + lines_count * line_height_mm
     height = height_mm * mm
 
@@ -33,44 +37,48 @@ def generate_ticket_bytes(client_name, items, total, observaciones=""):
 
     y = height - margin_mm * mm
 
-    # Client centered and bigger
+    # Cliente centrado y más grande
     c.setFont("Helvetica-Bold", client_size)
     c.drawCentredString(width / 2, y, f"{client_name}")
-    y -= 16
+    y -= 20
 
     # Observaciones con wrap
     if observaciones.strip():
         c.setFont("Helvetica", text_size)
-        wrapped_obs = wrapped_lines("Observaciones: " + observaciones, 36)
+        wrapped_obs = wrapped_lines("Obs: " + observaciones, MAX_CHARS_OBS)
         for line in wrapped_obs:
             c.drawString(margin_mm * mm, y, line)
-            y -= 10
-        y -= 4
+            y -= 11
+        y -= 6
 
-    # Headers
-    c.setFont("Helvetica-Bold", 9)
+    # Encabezados
+    c.setFont("Helvetica-Bold", 9.5)
     c.drawString(margin_mm * mm, y, "PEDIDO")
-    c.drawRightString(width - margin_mm * mm, y, "SUBTOTAL")
-    y -= 12
 
-    # Items con auto-wrap
+    # Ajuste: mover subtotal más hacia la derecha
+    subtotal_x = width - (margin_mm * mm) - 4  # + espacio extra
+    c.drawRightString(subtotal_x, y, "SUBTOTAL")
+    y -= 14
+
+    # Items con wrap
     c.setFont("Helvetica", text_size)
     for it in items:
         line = f"{it['qty']} {it['name']}"
-        wrapped = wrapped_lines(line)
+        wrapped = wrapped_lines(line, MAX_CHARS_DESC)
         for idx, part in enumerate(wrapped):
             c.drawString(margin_mm * mm, y, part)
-            # Print subtotal only on first line
+
             if idx == 0:
-                c.drawRightString(width - margin_mm * mm, y, f"S/. {it['subtotal']:.2f}")
-            y -= 10
+                c.drawRightString(subtotal_x, y, f"S/. {it['subtotal']:.2f}")
+
+            y -= 11
         y -= 5
 
     # Total
     y -= 10
-    c.setFont("Helvetica-Bold", 10)
+    c.setFont("Helvetica-Bold", 11)
     c.drawString(margin_mm * mm, y, "TOTAL")
-    c.drawRightString(width - margin_mm * mm, y, f"S/. {total:.2f}")
+    c.drawRightString(subtotal_x, y, f"S/. {total:.2f}")
 
     c.showPage()
     c.save()
