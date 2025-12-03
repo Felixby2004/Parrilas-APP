@@ -1,8 +1,8 @@
-# pages/ventas.py
 import streamlit as st
 from utils.data import PLATOS, BEBIDAS, EXTRA_PAPAS, EXTRA_TAPER, init_session_state
 from utils.pdf_generator import generate_ticket_bytes
 from utils.sheets_client import SheetsClient
+import json
 
 # Inicializa session_state si no existe
 init_session_state()
@@ -17,10 +17,49 @@ def get_sheets():
         _sheets_client = SheetsClient()
     return _sheets_client
 
+
+# ======================================================================
+#                           PANTALLA PRINCIPAL
+# ======================================================================
+
 def show():
     st.header("🛒 Ventas")
 
-    # Nombre del cliente
+    # --------------------------------------------------------
+    #  🔍 BUSCAR VENTA POR ID
+    # --------------------------------------------------------
+    st.subheader("🔍 Buscar Venta por ID")
+
+    buscar_id = st.text_input("Ingrese venta_id para editar", key="buscar_id")
+
+    if st.button("Buscar Venta"):
+        sheets = get_sheets()
+        venta = sheets.get_sale_by_id(buscar_id)
+
+        if not venta:
+            st.error("❌ Venta no encontrada")
+        else:
+            st.success("✔ Venta cargada para edición")
+
+            # Cargar datos en session_state
+            st.session_state.editing_id = venta["venta_id"]
+            st.session_state.cliente_input = venta["cliente"]
+            st.session_state.observaciones_input = venta["observaciones"]
+            st.session_state.cart = json.loads(venta["cart_json"])
+
+            st.rerun()
+
+
+    # --------------------------------------------------------
+    #  ✏️ INDICAR SI ESTAMOS EDITANDO UNA VENTA
+    # --------------------------------------------------------
+    if "editing_id" in st.session_state:
+        st.info(f"✏️ Editando venta existente: {st.session_state.editing_id}")
+
+
+    # --------------------------------------------------------
+    #  👤 CLIENTE
+    # --------------------------------------------------------
     client_name = st.text_input("Nombre del Cliente", key="cliente_input")
 
     st.subheader("🍽️ Platos")
@@ -41,6 +80,9 @@ def show():
 
     cantidad_plato = st.number_input("Cantidad de platos", min_value=0, value=0, step=1)
 
+    # --------------------------------------------------------
+    #   ➕ AGREGAR PLATO AL CARRITO
+    # --------------------------------------------------------
     if st.button("Agregar Plato al Carrito"):
         if plato_select == "Seleccionar" or cantidad_plato <= 0:
             st.warning("Selecciona un plato y una cantidad válida.")
@@ -71,6 +113,9 @@ def show():
 
     st.markdown("---")
 
+    # --------------------------------------------------------
+    #  🥤 BEBIDAS
+    # --------------------------------------------------------
     st.subheader("🥤 Bebidas")
 
     bebida_select = st.selectbox("Selecciona una bebida", ["Seleccionar"] + list(BEBIDAS.keys()))
@@ -95,7 +140,9 @@ def show():
 
     st.markdown("---")
 
-    # Observaciones
+    # --------------------------------------------------------
+    #   ✏️ OBSERVACIONES
+    # --------------------------------------------------------
     observaciones = st.text_area("Observaciones (opcional)", key="observaciones_input")
 
     st.markdown("---")
@@ -105,6 +152,9 @@ def show():
         st.info("El carrito está vacío. Agrega productos para continuar.")
         return
 
+    # --------------------------------------------------------
+    #  LISTADO DEL CARRITO
+    # --------------------------------------------------------
     total_general = 0
 
     for i, item in enumerate(list(st.session_state.cart)):
@@ -124,10 +174,10 @@ def show():
     st.markdown("---")
     st.write(f"### 💵 Total General: S/. {total_general:.2f}")
 
-    if not client_name or client_name.strip() == "":
-        client_name = "A"
 
-    # 🔥 PDF en tiempo real (si no hay nombre → usar "A")
+    # --------------------------------------------------------
+    #  📄 PDF PREVIEW / DESCARGAR
+    # --------------------------------------------------------
     pdf_client = client_name if client_name.strip() else "A"
     live_pdf = generate_ticket_bytes(
         pdf_client,
@@ -143,16 +193,43 @@ def show():
         mime="application/pdf"
     )
 
-    # Registrar venta
-    if st.button("✅ Registrar Venta y Guardar"):
+
+    # --------------------------------------------------------
+    #  💾 GUARDAR / ACTUALIZAR VENTA
+    # --------------------------------------------------------
+    if st.button("💾 Guardar Venta"):
+        sheets = get_sheets()
+
+        venta_id = (
+            st.session_state.editing_id
+            if "editing_id" in st.session_state
+            else sheets.next_id()
+        )
+
+        venta_dict = {
+            "venta_id": venta_id,
+            "cliente": client_name,
+            "cart_json": json.dumps(st.session_state.cart),
+            "total": total_general,
+            "observaciones": st.session_state.observaciones_input,
+            "fecha": sheets.today()
+        }
+
         try:
-            sheets = get_sheets()
-            sheets.append_sale(client_name, st.session_state.cart, st.session_state.observaciones_input)
+            if "editing_id" in st.session_state:
+                sheets.update_sale(venta_id, venta_dict)
+                st.success("✔ Venta actualizada correctamente")
+            else:
+                sheets.append_sale(client_name, st.session_state.cart, st.session_state.observaciones_input)
+                st.success("✔ Venta registrada correctamente")
+
         except Exception as e:
-            st.error(f"❌ Error guardando en Google Sheets: {e}")
+            st.error(f"❌ Error guardando: {e}")
             return
 
-        st.success(f"✅ Venta registrada")
-
-        # Limpiar carrito al registrar
+        # Limpiar
         st.session_state.cart = []
+        if "editing_id" in st.session_state:
+            del st.session_state.editing_id
+
+        st.rerun()
