@@ -87,46 +87,19 @@ class SheetsClient:
         
         
     def get_sale_by_id(self, venta_id):
-        """Devuelve una venta completa por venta_id (agrupada en un solo diccionario)."""
+        """Devuelve TODAS las filas que pertenecen a un venta_id."""
         try:
-            data = self.sheet.get_all_values()
-            if len(data) <= 1:
+            data = self.sheet.get_all_records()
+
+            # Filtrar filas con el mismo venta_id
+            venta = [row for row in data if str(row["venta_id"]) == str(venta_id)]
+
+            if not venta:
                 return None
 
-            df = pd.DataFrame(data[1:], columns=data[0])
-
-            # Filtrar por el venta_id (todo texto en Sheets)
-            df_filtered = df[df["venta_id"] == str(venta_id)]
-
-            if df_filtered.empty:
-                return None
-
-            # Información única
-            cliente = df_filtered.iloc[0]["cliente"]
-            observaciones = df_filtered.iloc[0]["observaciones"]
-            fecha = df_filtered.iloc[0]["fecha"]
-
-            # Construir carrito
-            cart = []
-            for _, row in df_filtered.iterrows():
-                cart.append({
-                    "name": row["producto"],
-                    "qty": int(row["cantidad"]),
-                    "unit_price": float(row["precio unitario"]),
-                    "extra": float(row["extra"]),
-                    "subtotal": float(row["precio total"])
-                })
-
-            # Retornar formato compatible con ventas.py
-            return {
-                "venta_id": str(venta_id),
-                "cliente": cliente,
-                "observaciones": observaciones,
-                "fecha": fecha,
-                "cart_json": json.dumps(cart)
-            }
-
+            return venta  # Lista con múltiples filas
         except Exception as e:
             st.error(f"Error buscando venta por ID: {e}")
             return None
+
 
