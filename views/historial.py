@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import base64
 from utils.sheets_client import SheetsClient
+import streamlit.components.v1 as components
 from utils.pdf_generator import generate_ticket_bytes
 
 # Singleton de sheets
@@ -75,12 +76,17 @@ def show():
         # ------------------------------------------------------------
         st.markdown("### 🧾 Comprobante de Venta")
 
-        base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
-        pdf_display = f"""
-        <iframe 
-            src="data:application/pdf;base64,{base64_pdf}" 
-            width="100%" 
-            height="700px">
-        </iframe>
+        # Convertir a base64
+        b64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
+
+        # Mostrar visor PDF sin bloqueo de Chrome
+        pdf_html = f"""
+            <embed 
+                src="data:application/pdf;base64,{b64_pdf}" 
+                type="application/pdf" 
+                width="100%" 
+                height="700px"
+            />
         """
-        st.markdown(pdf_display, unsafe_allow_html=True)
+
+        components.html(pdf_html, height=700)
