@@ -19,5 +19,5 @@ def show():
         unsafe_allow_html=True
     )
 
-    st.image("C:\Users\FELIX\Desktop\CARTA.png", caption="Carta de parrillas", use_column_width=True)
+    st.image("CARTA.png", caption="Carta de parrillas", use_column_width=True)
 
