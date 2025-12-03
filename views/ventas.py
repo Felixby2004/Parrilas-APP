@@ -2,9 +2,8 @@ import streamlit as st
 from utils.data import PLATOS, BEBIDAS, EXTRA_PAPAS, EXTRA_TAPER, init_session_state
 from utils.pdf_generator import generate_ticket_bytes
 from utils.sheets_client import SheetsClient
-import json
 
-# Inicializa session_state si no existe
+# Inicializa session_state
 init_session_state()
 
 if "observaciones_input" not in st.session_state:
@@ -41,21 +40,29 @@ def show():
         else:
             st.success("✔ Venta cargada para edición")
 
-            # Cargar datos en session_state
-            st.session_state.editing_id = venta["venta_id"]
-            st.session_state.cliente_input = venta["cliente"]
-            st.session_state.observaciones_input = venta["observaciones"]
-            st.session_state.cart = json.loads(venta["cart_json"])
+            # Cargar datos desde múltiple filas
+            st.session_state.editing_id = buscar_id
+            st.session_state.cliente_input = venta[0]["cliente"]
+            st.session_state.observaciones_input = venta[0]["observaciones"]
+
+            # Reconstruir carrito
+            st.session_state.cart = []
+            for row in venta:
+                st.session_state.cart.append({
+                    "name": row["producto"],
+                    "qty": int(row["cantidad"]),
+                    "unit_price": float(row["precio unitario"]),
+                    "extra": float(row["extra"]),
+                    "subtotal": float(row["precio total"])
+                })
 
             st.rerun()
 
-
     # --------------------------------------------------------
-    #  ✏️ INDICAR SI ESTAMOS EDITANDO UNA VENTA
+    #  ✏️ EDITANDO VENTA
     # --------------------------------------------------------
     if "editing_id" in st.session_state:
         st.info(f"✏️ Editando venta existente: {st.session_state.editing_id}")
-
 
     # --------------------------------------------------------
     #  👤 CLIENTE
@@ -81,7 +88,7 @@ def show():
     cantidad_plato = st.number_input("Cantidad de platos", min_value=0, value=0, step=1)
 
     # --------------------------------------------------------
-    #   ➕ AGREGAR PLATO AL CARRITO
+    #   ➕ AGREGAR PLATO
     # --------------------------------------------------------
     if st.button("Agregar Plato al Carrito"):
         if plato_select == "Seleccionar" or cantidad_plato <= 0:
@@ -109,7 +116,7 @@ def show():
                 "subtotal": subtotal
             })
 
-            st.success(f"Agregado al carrito ✅")
+            st.success("Agregado al carrito ✅")
 
     st.markdown("---")
 
@@ -136,7 +143,7 @@ def show():
                 "subtotal": subtotal
             })
 
-            st.success(f"Agregado al carrito ✅")
+            st.success("Agregado al carrito ✅")
 
     st.markdown("---")
 
@@ -174,9 +181,8 @@ def show():
     st.markdown("---")
     st.write(f"### 💵 Total General: S/. {total_general:.2f}")
 
-
     # --------------------------------------------------------
-    #  📄 PDF PREVIEW / DESCARGAR
+    #  📄 PDF
     # --------------------------------------------------------
     pdf_client = client_name if client_name.strip() else "A"
     live_pdf = generate_ticket_bytes(
@@ -193,9 +199,8 @@ def show():
         mime="application/pdf"
     )
 
-
     # --------------------------------------------------------
-    #  💾 GUARDAR / ACTUALIZAR VENTA
+    #  💾 GUARDAR / ACTUALIZAR
     # --------------------------------------------------------
     if st.button("💾 Guardar Venta"):
         sheets = get_sheets()
@@ -209,8 +214,7 @@ def show():
         venta_dict = {
             "venta_id": venta_id,
             "cliente": client_name,
-            "cart_json": json.dumps(st.session_state.cart),
-            "total": total_general,
+            "cart": st.session_state.cart,
             "observaciones": st.session_state.observaciones_input,
             "fecha": sheets.today()
         }
