@@ -28,13 +28,12 @@ def show():
         st.success("✔ Venta encontrada")
 
         # Datos generales (primer registro)
-        info = venta[0]
 
         st.markdown("### 🧾 Información General")
-        st.write(f"**ID:** {info['venta_id']}")
-        st.write(f"**Fecha:** {info['fecha']}")
-        st.write(f"**Cliente:** {info['cliente']}")
-        st.write(f"**Observaciones:** {info['observaciones'] or '—'}")
+        st.write(f"**ID:** {venta['venta_id']}")
+        st.write(f"**Fecha:** {venta['fecha']}")
+        st.write(f"**Cliente:** {venta['cliente']}")
+        st.write(f"**Observaciones:** {venta['observaciones'] or '—'}")
 
         # Mostrar tabla con todos los ítems
         st.markdown("### 🛒 Detalle de Venta")
@@ -60,4 +59,3 @@ def show():
         st.markdown("---")
         st.write(f"### 💵 Total General: **S/. {total_general:.2f}**")
 
-        
