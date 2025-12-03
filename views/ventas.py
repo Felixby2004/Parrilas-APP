@@ -24,13 +24,20 @@ def show():
     client_name = st.text_input("Nombre del Cliente", key="cliente_input")
 
     st.subheader("🍽️ Platos")
-    plato_select = st.selectbox("Selecciona un plato", ["Seleccionar"] + list(PLATOS.keys()))
+    plato_select = st.selectbox(
+        "Selecciona un plato",
+        ["Seleccionar"] + list(PLATOS.keys()),
+        index=0
+    )
     papas = False
     taper = False
 
     if plato_select != "Seleccionar":
-        papas = st.checkbox("Agregar Papas Fritas")
-        taper = st.checkbox("Agregar Taper")
+        col1, col2 = st.columns(2)
+        with col1:
+            papas = st.checkbox("Agregar Papas Fritas")
+        with col2:
+            taper = st.checkbox("Agregar Taper")
 
     cantidad_plato = st.number_input("Cantidad de platos", min_value=0, value=0, step=1)
 
@@ -62,6 +69,8 @@ def show():
 
             st.success(f"Agregado al carrito ✅")
 
+    st.markdown("---")
+
     st.subheader("🥤 Bebidas")
 
     bebida_select = st.selectbox("Selecciona una bebida", ["Seleccionar"] + list(BEBIDAS.keys()))
@@ -83,6 +92,8 @@ def show():
             })
 
             st.success(f"Agregado al carrito ✅")
+
+    st.markdown("---")
 
     # Observaciones
     observaciones = st.text_area("Observaciones (opcional)", key="observaciones_input")
