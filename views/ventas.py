@@ -2,6 +2,7 @@ import streamlit as st
 from utils.data import PLATOS, BEBIDAS, EXTRA_PAPAS, EXTRA_TAPER, init_session_state
 from utils.pdf_generator import generate_ticket_bytes
 from utils.sheets_client import SheetsClient
+import base64
 
 # Inicializa session_state
 init_session_state()
@@ -193,7 +194,15 @@ def show():
     )
 
     st.subheader("📄 Vista Previa del Comprobante")
-    st.pdf(live_pdf)
+
+    # Convertir PDF a base64
+    b64_pdf = base64.b64encode(live_pdf).decode("utf-8")
+
+    pdf_display = f"""
+    <iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="600px" type="application/pdf"></iframe>
+    """
+
+    st.markdown(pdf_display, unsafe_allow_html=True)
 
 
     # --------------------------------------------------------
