@@ -101,5 +101,3 @@ class SheetsClient:
         except Exception as e:
             st.error(f"Error buscando venta por ID: {e}")
             return None
-
-
