@@ -13,3 +13,11 @@ def show():
         st.subheader("Bebidas")
         for name, price in BEBIDAS.items():
             st.write(f"**{name}** — S/. {price:.2f}")
+
+    st.markdown(
+        '<a href="https://www.canva.com/design/DAG56xiL4hw/P-wPRfxuGHtgF37Dxx0aEw/edit" target="_blank">Visitar página</a>',
+        unsafe_allow_html=True
+    )
+
+    st.image("C:\Users\FELIX\Desktop\CARTA.png", caption="Carta de parrillas", use_column_width=True)
+
