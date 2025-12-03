@@ -59,3 +59,5 @@ def show():
 
         st.markdown("---")
         st.write(f"### 💵 Total General: **S/. {total_general:.2f}**")
+
+        
