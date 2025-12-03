@@ -25,46 +25,6 @@ def show():
     st.header("🛒 Ventas")
 
     # --------------------------------------------------------
-    #  🔍 BUSCAR VENTA POR ID
-    # --------------------------------------------------------
-    st.subheader("🔍 Buscar Venta por ID")
-
-    buscar_id = st.text_input("Ingrese venta_id para editar", key="buscar_id")
-
-    if st.button("Buscar Venta"):
-        sheets = get_sheets()
-        venta = sheets.get_sale_by_id(buscar_id)
-
-        if not venta:
-            st.error("❌ Venta no encontrada")
-        else:
-            st.success("✔ Venta cargada para edición")
-
-            # Cargar datos desde múltiple filas
-            st.session_state.editing_id = buscar_id
-            st.session_state.cliente_input = venta[0]["cliente"]
-            st.session_state.observaciones_input = venta[0]["observaciones"]
-
-            # Reconstruir carrito
-            st.session_state.cart = []
-            for row in venta:
-                st.session_state.cart.append({
-                    "name": row["producto"],
-                    "qty": int(row["cantidad"]),
-                    "unit_price": float(row["precio unitario"]),
-                    "extra": float(row["extra"]),
-                    "subtotal": float(row["precio total"])
-                })
-
-            st.rerun()
-
-    # --------------------------------------------------------
-    #  ✏️ EDITANDO VENTA
-    # --------------------------------------------------------
-    if "editing_id" in st.session_state:
-        st.info(f"✏️ Editando venta existente: {st.session_state.editing_id}")
-
-    # --------------------------------------------------------
     #  👤 CLIENTE
     # --------------------------------------------------------
     client_name = st.text_input("Nombre del Cliente", key="cliente_input")

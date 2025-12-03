@@ -17,13 +17,13 @@ init_session_state()
 
 with st.sidebar:
     st.title("🔥 Parrilladas - El Establo")
-    page = st.radio("Ir a:", ["Carta", "Ventas"])
+    page = st.radio("Ir a:", ["Carta", "Ventas", "Historial"])
 
 
 if page == "Carta":
     carta.show()
 elif page == "Ventas":
     ventas.show()
-else:
+elif page == "Historial":
     historial.show()
 
