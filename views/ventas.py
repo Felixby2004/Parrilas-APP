@@ -192,12 +192,9 @@ def show():
         st.session_state.observaciones_input
     )
 
-    st.download_button(
-        "🎟️ Descargar Comprobante",
-        data=live_pdf,
-        file_name=f"ticket_de_{client_name}.pdf",
-        mime="application/pdf"
-    )
+    st.subheader("📄 Vista Previa del Comprobante")
+    st.pdf(live_pdf)
+
 
     # --------------------------------------------------------
     #  💾 GUARDAR / ACTUALIZAR
