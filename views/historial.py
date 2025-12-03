@@ -1,5 +1,8 @@
 import streamlit as st
+import json
 from utils.sheets_client import SheetsClient
+from utils.pdf_generator import generate_ticket_bytes
+import base64
 
 # Obtener cliente Sheets (singleton)
 _sheets_client = None
@@ -19,7 +22,15 @@ def show():
 
     if st.button("Buscar"):
         sheets = get_sheets()
-        venta = sheets.get_sale_by_id(venta_id)
+
+        # Normalizar ID
+        venta_id_str = str(venta_id).strip()
+
+        if not venta_id_str.isdigit():
+            st.error("❌ El ID debe ser un número válido.")
+            return
+
+        venta = sheets.get_sale_by_id(venta_id_str)
 
         if not venta:
             st.error("❌ No existe una venta con ese ID")
@@ -27,35 +38,43 @@ def show():
 
         st.success("✔ Venta encontrada")
 
-        # Datos generales (primer registro)
+        # ------------------------------------------------------------
+        # Obtener datos necesarios desde la venta
+        # ------------------------------------------------------------
+        cliente = venta["cliente"]
+        observaciones = venta.get("observaciones", "")
 
-        st.markdown("### 🧾 Información General")
-        st.write(f"**ID:** {venta['venta_id']}")
-        st.write(f"**Fecha:** {venta['fecha']}")
-        st.write(f"**Cliente:** {venta['cliente']}")
-        st.write(f"**Observaciones:** {venta['observaciones'] or '—'}")
+        try:
+            cart = json.loads(venta["cart_json"])
+        except:
+            st.error("❌ Error al leer el carrito.")
+            return
 
-        # Mostrar tabla con todos los ítems
-        st.markdown("### 🛒 Detalle de Venta")
+        # Calcular total
+        total_general = sum(float(item["subtotal"]) for item in cart)
 
-        total_general = 0
-        for row in venta:
-            total_general += float(row["precio total"])
+        # ------------------------------------------------------------
+        # Generar PDF
+        # ------------------------------------------------------------
+        pdf_bytes = generate_ticket_bytes(
+            cliente,
+            cart,
+            total_general,
+            observaciones
+        )
 
-        # Mostrar productos en tabla visual
-        import pandas as pd
+        # ------------------------------------------------------------
+        # Mostrar PDF en pantalla
+        # ------------------------------------------------------------
+        st.markdown("### 🧾 Comprobante de Venta")
 
-        df = pd.DataFrame(venta)
-        df = df[[
-            "producto",
-            "cantidad",
-            "precio unitario",
-            "extra",
-            "precio total"
-        ]]
-
-        st.table(df)
-
-        st.markdown("---")
-        st.write(f"### 💵 Total General: **S/. {total_general:.2f}**")
-
+        base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+        pdf_display = f"""
+        <iframe 
+            src="data:application/pdf;base64,{base64_pdf}" 
+            width="100%" 
+            height="700px" 
+            type="application/pdf">
+        </iframe>
+        """
+        st.markdown(pdf_display, unsafe_allow_html=True)
